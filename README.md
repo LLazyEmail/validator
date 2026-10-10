@@ -9,29 +9,43 @@ Small TypeScript validation helpers extracted from
 npm install @llazyemail/validator
 ```
 
+Requires a `read:packages` token for GitHub Packages. See `.npmrc.example`.
+
 ## Usage
 
 ```ts
-import { validateInput } from '@llazyemail/validator';
+import { validateInput, ValidationError, minLength } from '@llazyemail/validator';
 
-validateInput(
-  { title: 'Newsletter', headStyles: '<style></style>' },
-  [
-    { field: 'title', errorMessage: 'no title was passed' },
-    { field: 'headStyles', errorMessage: 'no headStyles was passed' },
-  ],
-);
+try {
+  validateInput(
+    { title: 'Newsletter', email: 'user@example.com' },
+    [
+      { field: 'title', errorMessage: 'no title was passed' },
+      { field: 'email', errorMessage: 'invalid email', rules: ['required', 'email'] },
+      { field: 'title', errorMessage: 'title too short', rules: [minLength(3)] },
+    ],
+  );
+} catch (err) {
+  if (err instanceof ValidationError) {
+    console.error(err.field, err.message, err.ruleMessage);
+  }
+}
 ```
 
-Built-in rules: `required`, `nonEmptyString`, `string`.
+Built-in rules: `required`, `nonEmptyString`, `string`, `email`, `url`.
+
+Length helpers: `minLength(n)`, `maxLength(n)`.
 
 A check defaults to `['required', 'nonEmptyString']` when `rules` is omitted.
+
+Custom `Rule` functions are also accepted in the `rules` array.
 
 ## Develop
 
 ```bash
 npm install
 npm test
+npm run typecheck
 npm run build
 ```
 
